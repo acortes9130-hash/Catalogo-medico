@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Catálogo Especializado | Ángel Cortés</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f1f5f9;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .category-pill {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .category-pill.active {
+            background-color: #1e293b;
+            color: white;
+            border-color: #1e293b;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .product-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .product-card:active {
+            transform: scale(0.98);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .badge-neuro { background: #dbeafe; color: #1e40af; }
+        .badge-cardio { background: #fee2e2; color: #b91c1c; }
+        .badge-imagen { background: #f0fdf4; color: #166534; }
+        .badge-insumos { background: #faf5ff; color: #6b21a8; }
+    </style>
+</head>
+<body class="pb-32">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-5">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Ángel Cortés</h1>
+                <div class="flex items-center gap-2 mt-1">
+                    <span class="h-2 w-2 bg-emerald-500 rounded-full animate-pulse"></span>
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Equipamiento Médico Especializado</p>
+                </div>
+            </div>
+            <div id="cart-counter" class="hidden bg-blue-600 h-8 px-3 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg">
+                <span id="count-label">0</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto p-4">
+        
+        <!-- Buscador -->
+        <div class="relative mb-6">
+            <input type="text" id="searchInput" oninput="render()" 
+                   placeholder="Neuromaster, Siemens, Ecocardio..." 
+                   class="w-full bg-white border border-slate-200 rounded-2xl py-4 pl-12 pr-4 shadow-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
+            <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+        </div>
+
+        <!-- Categorías -->
+        <div class="flex gap-2 overflow-x-auto no-scrollbar mb-8 pb-2">
+            <button onclick="setCategory('Todos')" id="cat-Todos" class="category-pill active whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-bold">Todos</button>
+            <button onclick="setCategory('Neuro')" id="cat-Neuro" class="category-pill bg-white whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-bold uppercase">Neuro</button>
+            <button onclick="setCategory('Cardio')" id="cat-Cardio" class="category-pill bg-white whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-bold uppercase">Cardio / Eco</button>
+            <button onclick="setCategory('Imagen')" id="cat-Imagen" class="category-pill bg-white whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-bold uppercase">Imagen</button>
+            <button onclick="setCategory('Insumos')" id="cat-Insumos" class="category-pill bg-white whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-bold uppercase">Insumos</button>
+        </div>
+
+        <!-- Lista de Productos -->
+        <div id="catalog" class="space-y-4">
+            <!-- Dinámico -->
+        </div>
+
+    </main>
+
+    <!-- WhatsApp Action Float -->
+    <div id="action-bar" class="fixed bottom-6 left-4 right-4 max-w-md mx-auto z-50 transform translate-y-32 transition-transform duration-500">
+        <button onclick="sendWhatsApp()" class="w-full bg-slate-900 text-white py-5 rounded-2xl shadow-2xl flex items-center justify-between px-8 font-bold text-sm">
+            <div class="flex items-center gap-3">
+                <i class="fa-brands fa-whatsapp text-xl text-emerald-400"></i>
+                <span>COTIZAR SELECCIÓN</span>
+            </div>
+            <span id="footer-count" class="bg-blue-500 text-white h-6 w-6 rounded-full flex items-center justify-center text-[10px]">0</span>
+        </button>
+    </div>
+
+    <script>
+        const inventory = [
+            // NEURO
+            { id: 1, name: "Neuromaster MEE-2000", brand: "Nihon Kohden", cat: "Neuro", badge: "badge-neuro", desc: "Sistema de Monitoreo Intraoperatorio (IOM). Monitoreo integral de MEP, SSEP, VEP, ABR y EMG para seguridad quirúrgica." },
+            { id: 2, name: "Neuropack MEB-9600", brand: "Nihon Kohden", cat: "Neuro", badge: "badge-neuro", desc: "Sistema avanzado de EMG/PE con diseño compacto y alta fidelidad de señal para diagnóstico neurofisiológico." },
+            { id: 3, name: "Neurofax EEG-1200", brand: "Nihon Kohden", cat: "Neuro", badge: "badge-neuro", desc: "Electroencefalógrafo de alta gama, con módulos de 32 a 256 canales. Líder en monitoreo clínico." },
+            
+            // CARDIO / ECO
+            { id: 4, name: "Ecocardiógrafo 2D, 3D y 4D", brand: "Siemens / Philips / Samsung", cat: "Cardio", badge: "badge-cardio", desc: "Sistemas premium para cardiología avanzada. Evaluación volumétrica en tiempo real, Strain y TEE 3D." },
+            { id: 5, name: "Sistema de Prueba de Esfuerzo", brand: "BTL / Schiller", cat: "Cardio", badge: "badge-cardio", desc: "Integración completa con bandas de alta resistencia y ECG de 12 canales con algoritmos de interpretación." },
+            { id: 6, name: "Cardiofax M ECG-2350", brand: "Nihon Kohden", cat: "Cardio", badge: "badge-cardio", desc: "ECG de 12 canales con pantalla táctil e interpretación avanzada ECAPS 12C." },
+
+            // IMAGEN
+            { id: 7, name: "Arco en C Cios Select", brand: "Siemens Healthineers", cat: "Imagen", badge: "badge-imagen", desc: "Excelente calidad de imagen y confiabilidad para quirófano con mínima dosis de radiación." },
+            { id: 8, name: "Rayos X Portátil Mobilett", brand: "Siemens Healthineers", cat: "Imagen", badge: "badge-imagen", desc: "Sistema de rayos X móvil ligero y potente, ideal para cuidados intensivos y urgencias." },
+            { id: 9, name: "Ultrasonido Doppler Color", brand: "Siemens / Philips / Samsung", cat: "Imagen", badge: "badge-imagen", desc: "Equipos multidisciplinarios de alta resolución para radiología general y gineco-obstetricia." },
+
+            // INSUMOS
+            { id: 10, name: "Agujas de EMG Desechables", brand: "Spes Medica", cat: "Insumos", badge: "badge-insumos", desc: "Agujas concéntricas y monopolares de alta precisión. Excelente conductividad y confort para el paciente." },
+            { id: 11, name: "Pasta Conductora Ten20", brand: "Weaver & Co", cat: "Insumos", badge: "badge-insumos", desc: "Pasta adhesiva conductora original indispensable para estudios de EEG de larga duración." }
+        ];
+
+        let selectedItems = new Set();
+        let currentCategory = "Todos";
+
+        function render() {
+            const container = document.getElementById('catalog');
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            
+            container.innerHTML = "";
+
+            const filtered = inventory.filter(item => {
+                const matchesSearch = item.name.toLowerCase().includes(term) || 
+                                     item.brand.toLowerCase().includes(term) || 
+                                     item.desc.toLowerCase().includes(term);
+                const matchesCat = currentCategory === "Todos" || item.cat === currentCategory;
+                return matchesSearch && matchesCat;
+            });
+
+            filtered.forEach(item => {
+                const isSelected = selectedItems.has(item.id);
+                const card = document.createElement('div');
+                card.className = "product-card bg-white rounded-3xl p-6 border border-slate-100 shadow-sm";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${item.badge}">${item.cat}</span>
+                        <div class="h-6 w-6 rounded-full flex items-center justify-center ${isSelected ? 'bg-blue-600 text-white' : 'bg-slate-50 text-slate-200'}">
+                            <i class="fa-solid fa-check text-[10px]"></i>
+                        </div>
+                    </div>
+                    <h3 class="font-extrabold text-slate-900 text-lg mb-1 leading-tight">${item.name}</h3>
+                    <p class="text-blue-600 text-[10px] font-black uppercase tracking-widest mb-3">${item.brand}</p>
+                    <p class="text-xs text-slate-500 leading-relaxed mb-6">${item.desc}</p>
+                    <button onclick="toggleItem(${item.id})" 
+                            class="w-full py-4 rounded-2xl font-bold text-xs transition-all 
+                            ${isSelected ? 'bg-rose-50 text-rose-600 border border-rose-100' : 'bg-slate-900 text-white shadow-lg'}">
+                        ${isSelected ? 'QUITAR DE LA LISTA' : 'AGREGAR A MI SELECCIÓN'}
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleItem(id) {
+            if (selectedItems.has(id)) selectedItems.delete(id);
+            else selectedItems.add(id);
+            updateUI();
+            render();
+        }
+
+        function updateUI() {
+            const bar = document.getElementById('action-bar');
+            const footerCount = document.getElementById('footer-count');
+            const counter = document.getElementById('cart-counter');
+            const label = document.getElementById('count-label');
+            
+            footerCount.innerText = selectedItems.size;
+            label.innerText = selectedItems.size;
+            
+            if (selectedItems.size > 0) {
+                bar.classList.remove('translate-y-32');
+                counter.classList.remove('hidden');
+            } else {
+                bar.classList.add('translate-y-32');
+                counter.classList.add('hidden');
+            }
+        }
+
+        function setCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.category-pill').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`cat-${cat}`).classList.add('active');
+            render();
+        }
+
+        function sendWhatsApp() {
+            const list = Array.from(selectedItems).map(id => {
+                const p = inventory.find(x => x.id === id);
+                return `• ${p.name} [${p.brand}]`;
+            }).join('%0A');
+            
+            const message = `Hola Ángel Cortés, estoy interesado en recibir información y precios de los siguientes equipos:%0A%0A${list}%0A%0AGracias.`;
+            window.open(`https://wa.me/525519526416?text=${message}`);
+        }
+
+        window.onload = render;
+    </script>
+</body>
+</html>
